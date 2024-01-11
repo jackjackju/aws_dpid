@@ -5,7 +5,7 @@ from typing import  Callable
 import os
 import pickle
 from gevent import time
-from speedydumbobft.core.info_dispersal import InfoDispersal
+from dpid.core.info_dispersal import InfoDispersal
 from myexperiements.sockettest.make_random_tx import tx_generator
 from multiprocessing import Value as mpValue
 from coincurve import PrivateKey, PublicKey
