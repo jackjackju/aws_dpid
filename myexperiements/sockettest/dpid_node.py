@@ -57,7 +57,7 @@ class DPIDNode(InfoDispersal):
     def prepare_bootstrap(self):
         self.logger.info('node id %d is inserting dummy payload TXs' % (self.id))
         if self.mode == 'test' or 'debug': #K * max(Bfast * S, Bacs)
-            tx = tx_generator(250)  # Set each dummy TX to be 250 Byte
+            tx = tx_generator(1024*1024)  # Set each dummy TX to be 250 Byte
             k = 0
             for _ in range(self.K):
                 for r in range(self.B):
