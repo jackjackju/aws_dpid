@@ -98,7 +98,7 @@ def refresh(pid, N, f, add_values_out, share, receive, send, target, all):
                     readySent = True
 
                     original_msg = decode(K, N, values)
-                    print(str(pid) + " : " + str(original_msg))
+                    #print(str(pid) + " : " + str(original_msg))
                     break
 
     sk_path = os.getcwd() + "/keys/private_key_" + str(pid) + ".pem"

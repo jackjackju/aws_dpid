@@ -338,8 +338,8 @@ class InfoDispersal():
                                    coin_bcast, coin_recv.get)
                 return coin
 
-            test_coin = _setup_coin(0)
-            committee = ast.literal_eval(test_coin(0))
+            #test_coin = _setup_coin(0)
+            #committee = ast.literal_eval(test_coin(0))
             #print(committee)
 
             # Start refreshing once received output from ADD
@@ -352,7 +352,7 @@ class InfoDispersal():
             refresh_thread = gevent.spawn(refresh, pid, N, f,
                                add_thread.get, share,
                                refresh_recv.get,
-                               refresh_send, committee, False)
+                               refresh_send, [], True)
 
             result = refresh_thread.get()
 
