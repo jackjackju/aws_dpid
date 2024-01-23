@@ -202,7 +202,7 @@ class NetworkServer (Process):
         logger.setLevel(logging.DEBUG)
         # logger.setLevel(logging.INFO)
         formatter = logging.Formatter(
-            '%(asctime)s %(filename)s [line:%(lineno)d] %(funcName)s %(levelname)s %(message)s ')
+            '%(asctime)s %(filename)s [line:%(lineno)d] %(funcName)s %(levelname)s')
         if 'log' not in os.listdir(os.getcwd()):
             os.mkdir(os.getcwd() + '/log')
         full_path = os.path.realpath(os.getcwd()) + '/log/' + "node-" + str(id) + ".log"

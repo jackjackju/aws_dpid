@@ -59,7 +59,8 @@ class NetworkServer(Process):
                         data = tmp[0]
                         if data != '' and data:
                             (j, o) = (jid, pickle.loads(data))
-                            self.logger.info('node id %d value %s' % (j, o))
+                            k = str(o[1][0])
+                            self.logger.info('node id %d value %s' % (j, k))
                             # assert j in range(self.N)
                             self.server_to_bft((j, o))
                             # self.logger.info('recv' + str((j, o)))
