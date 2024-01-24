@@ -67,39 +67,11 @@ def refresh(pid, N, f, add_values_out, share, receive, send, target, all):
 
     membership = True
 
-    if (all == False):
-        if ((pid in target) == False):
-            membership = False
-
-    if membership == True:
-        while True:  # main receive loop
-
-            sender, msg = receive()
-
-            if msg[0] == 'VAL':
-                # Validation
-                (_, target, val) = msg
-                if hash(val) != proof[target]:
-                    print("Invalid hash value")
-                    continue
-
-
-                if sender in valuesSenders:
-                    print("Redundant Value for " + str(sender) + " in " + str(pid))
-                    continue
-
-                # Update
-                counter += 1
-                values[sender] = val
-                valuesSenders.add(sender)
-            #
-                # Amplify ready messages
-                if counter >= ReadyThreshold and readySent == False:
-                    readySent = True
-
-                    original_msg = decode(K, N, values)
-                    #print(str(pid) + " : " + str(original_msg))
-                    break
+    # if (all == False):
+    #     if ((pid in target) == False):
+    #         membership = False
+    #
+    # if membership == True:
 
     sk_path = os.getcwd() + "/keys/private_key_0.pem"
     pk_path = os.getcwd() + "/keys/public_key_0.pem"
@@ -110,19 +82,6 @@ def refresh(pid, N, f, add_values_out, share, receive, send, target, all):
     with open(pk_path, 'r') as f:
         public_key = RSA.import_key(f.read())
 
-    if membership == True:
-        stripes = encode(K, N, original_msg)
-        # print(stripes)
-        hash_list = str([hash(piece) for piece in stripes])
-
-        data_signed = hash(hash_list)
-        sig = sign_data(private_key, data_signed)
-        for j in range(N):
-            send(j, ('RELAY', stripes[j], hash_list))
-            #send(j, ('FINAL', sig))
-        # print(str(pid) + " has sent all")
-
-    data_signed = proof_hash
     ready = defaultdict(set)
     readySent = False
     readySenders = set()
@@ -132,28 +91,41 @@ def refresh(pid, N, f, add_values_out, share, receive, send, target, all):
     while True:  # main receive loop
 
         sender, msg = receive()
-        if msg[0] == 'RELAY':
-            if readySent == True:
+
+        if msg[0] == 'VAL':
+            # Validation
+            (_, target, val) = msg
+            if readySent:
                 continue
 
-            (_, share_recv, hash_list) = msg
-
-            if hash(hash_list) != proof_hash:
-                print("Invalid Relay msg")
-                print(proof_hash)
+            if hash(val) != proof[target]:
+                print("Invalid hash value")
                 continue
 
-            share = share_recv
+            if sender in valuesSenders:
+                print("Redundant Value for " + str(sender) + " in " + str(pid))
+                continue
 
-            data_signed = proof_hash
-            sig = sign_data(private_key, data_signed)
-            for j in range(N):
-                send(j, ('FINAL', sig))
-            readySent = True
+            # Update
+            counter += 1
+            values[sender] = val
+            valuesSenders.add(sender)
+        #
+            # Amplify ready messages
+            if (counter >= ReadyThreshold) and (readySent == False):
+                readySent = True
 
-            if len(ready[data_signed]) >= ReadyThreshold:
-                refresh_value = (share, proof_str)
-                return tuple(refresh_value)
+                original_msg = decode(K, N, values)
+                #print(str(pid) + " : " + str(original_msg))
+
+                stripes = encode(K, N, original_msg)
+                hash_list = str([hash(piece) for piece in stripes])
+
+                data_signed = hash(hash_list)
+                sig = sign_data(private_key, data_signed)
+                for j in range(N):
+                    #send(j, ('RELAY', stripes[j], hash_list))
+                    send(j, ('FINAL', sig))
 
         if msg[0] == 'FINAL':
             # Validation
@@ -166,17 +138,18 @@ def refresh(pid, N, f, add_values_out, share, receive, send, target, all):
             with open(pk_path, 'r') as f:
                 public_key_verify = RSA.import_key(f.read())
 
-            if verify_signature(public_key_verify, data_signed, sig_recv) == False:
+            if verify_signature(public_key_verify, proof_hash, sig_recv) == False:
                 print("Invalid Sig Received")
                 continue
 
             # Update
-            ready[data_signed].add(sender)
+            identifier = str(proof_hash)
+            ready[identifier].add(sender)
             readySenders.add(sender)
             sigs.append((sender, sig_recv))
 
             # Amplify ready messages
-            if len(ready[data_signed]) >= ReadyThreshold:
+            if len(ready[identifier]) >= ReadyThreshold:
                 refresh_value = (share, proof_str)
                 return tuple(refresh_value)
 
