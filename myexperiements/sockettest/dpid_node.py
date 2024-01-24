@@ -28,7 +28,7 @@ class DPIDNode(InfoDispersal):
         size = self.size
         print(str(size))
         tx = tx_generator(size)  # Set each dummy TX to be 250 Byte
-        InfoDispersal.submit_tx(self, tx.replace(">", hex(r) + ">"))
+        InfoDispersal.submit_tx(self, tx.replace(">", hex(0) + ">"))
         self.logger.info('node id %d completed the loading of dummy TXs' % (self.id))
 
     def run(self):

@@ -38,11 +38,12 @@ def add(sid, pid, N, f, input, receive, send, logger):
                 print("Redundant DISP for " + str(sender) + " in " + str(pid))
                 continue
 
-            dispCounter[value].add(sender)
+            hash_val = str(hash(value))
+            dispCounter[hash_val].add(sender)
             dispSenders.add(sender)
 
             # Amplify ready messages
-            if len(dispCounter[value]) >= ReadyThreshold:
+            if len(dispCounter[hash_val]) >= ReadyThreshold:
                 if reconstructSent == False:
                     reconstructSent = True
                     for i in range(N):
@@ -58,7 +59,7 @@ def add(sid, pid, N, f, input, receive, send, logger):
 
             reconstCounter[sender] = value
             count += 1
-            reconstCheck.append([sender, value])
+            reconstCheck.append([sender, str(hash(value))])
             reconstSenders.add(sender)
 
             #wait for N or more than f+1????????
@@ -71,15 +72,10 @@ def add(sid, pid, N, f, input, receive, send, logger):
 
                 check_share = encode(K, N, m)
 
-                # print("Checking")
-                # print(check_share)
-                # print("")
-                # print(reconstCounter)
-                # return m
                 counter = 0
                 for i in reconstCheck:
                     (sender, value) = i
-                    if (check_share[sender] == value):
+                    if (str(hash(check_share[sender])) == value):
                         counter += 1
 
                     if (counter >= OutputThreshold):
