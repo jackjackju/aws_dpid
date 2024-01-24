@@ -91,20 +91,12 @@ class InfoDispersal():
     :param K: a test parameter to specify break out after K rounds
     """
 
-    def __init__(self, sid, pid, B, N, f, sPK, sSK, sPK1, sSK1, sPK2s, sSK2, ePK, eSK, send, recv, K=3, mute=False, debug=False):
+    def __init__(self, sid, pid, B, N, f, send, recv):
         self.sid = sid
         self.id = pid
         self.B = B
         self.N = N
         self.f = f
-        self.sPK = sPK
-        self.sSK = sSK
-        self.sPK1 = sPK1
-        self.sSK1 = sSK1
-        self.sPK2s = sPK2s
-        self.sSK2 = sSK2
-        self.ePK = ePK
-        self.eSK = eSK
         self._send = send
         self._recv = recv
         self.logger = set_consensus_log(pid)
@@ -112,14 +104,9 @@ class InfoDispersal():
         self.transaction_buffer = Queue()
         self._per_round_recv = {}  # Buffer of incoming messages
 
-        self.K = K
-
         self.s_time = 0
         self.e_time = 0
         self.txcnt = 0
-
-        self.mute = mute
-        self.debug = debug
 
     def submit_tx(self, tx):
         """Appends the given transaction to the transaction buffer.
@@ -157,14 +144,13 @@ class InfoDispersal():
             self.logger.info('Node %d starts to run at time:' % self.id + str(self.s_time))
 
         while True:
-            r = self.round
+            r = 0
             if r not in self._per_round_recv:
                 self._per_round_recv[r] = Queue()
 
             tx_to_send = []
             if self.id == 0:
-                for _ in range(self.B):
-                    tx_to_send.append(self.transaction_buffer.get_nowait())
+                tx_to_send.append(self.transaction_buffer.get_nowait())
 
             def _make_send(r):
                 def _send(j, o):
@@ -186,11 +172,9 @@ class InfoDispersal():
             end = time.time()
 
             if self.logger != None:
-                self.logger.info('ACS Block Delay at Node %d: ' % self.id + str(end - start))
+                self.logger.info('Total Block Delay at Node %d: ' % self.id + str(end - start))
 
-            self.round += 1     # Increment the round
-            if self.round >= self.K:
-                break   # Only run one round for now
+            break   # Only run one round for now
 
         if self.logger != None:
             self.e_time = time.time()
@@ -318,30 +302,6 @@ class InfoDispersal():
             add_thread = _setup_add()
             add_input.put_nowait(hashes)
 
-            committee = []
-            def _setup_coin(j):
-                """Setup the sub protocols RBC, BA and common coin.
-                :param int j: Node index for which the setup is being done.
-                """
-
-                def coin_bcast(o):
-                    """Reliable send operation.
-                    :param k: Node to send.
-                    :param o: Value to send.
-                    """
-                    for j in range(N):
-                        send(j, ('COIN', pid, o))
-
-                # Only leader gets input
-                coin = shared_coin(sid + 'COIN' + str(j), pid, N, f,
-                                   self.sPK, self.sSK,
-                                   coin_bcast, coin_recv.get)
-                return coin
-
-            #test_coin = _setup_coin(0)
-            #committee = ast.literal_eval(test_coin(0))
-            #print(committee)
-
             # Start refreshing once received output from ADD
             def refresh_send(k, o):
                 """Reliable send operation.
@@ -373,8 +333,4 @@ class InfoDispersal():
             # Close all incoming queues
             bc_recv_loop_thread.kill()
 
-            ret = []
-            return ret
-            #return []
-
-    # TODO： make help and callhelp threads to handle the rare cases when vacs (vaba) returns None
+            return []

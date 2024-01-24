@@ -31,8 +31,8 @@ def rbc_check(pid, N, f, rbc_values_out, receive, send, logger=None):
     K = N - 2 * f  # Need this many to reconstruct. (# noqa: E221)
     ReadyThreshold = f + 1  # Wait for this many READY to amplify READY. (# noqa: E221)
 
-    sk_path = os.getcwd() + "/keys/private_key_" + str(pid) + ".pem"
-    pk_path = os.getcwd() + "/keys/public_key_" + str(pid) + ".pem"
+    sk_path = os.getcwd() + "/keys/private_key_0.pem"
+    pk_path = os.getcwd() + "/keys/public_key_0.pem"
     with open(sk_path, 'r') as f:
         private_key = RSA.import_key(f.read())
 
@@ -68,7 +68,7 @@ def rbc_check(pid, N, f, rbc_values_out, receive, send, logger=None):
                 print("Redundant READY for " + str(sender) + " in " + str(pid))
                 continue
 
-            pk_path = os.getcwd() + "/keys/public_key_" + str(sender) + ".pem"
+            pk_path = os.getcwd() + "/keys/public_key_0.pem"
             with open(pk_path, 'r') as f:
                 public_key_verify = RSA.import_key(f.read())
 

@@ -101,8 +101,8 @@ def refresh(pid, N, f, add_values_out, share, receive, send, target, all):
                     #print(str(pid) + " : " + str(original_msg))
                     break
 
-    sk_path = os.getcwd() + "/keys/private_key_" + str(pid) + ".pem"
-    pk_path = os.getcwd() + "/keys/public_key_" + str(pid) + ".pem"
+    sk_path = os.getcwd() + "/keys/private_key_0.pem"
+    pk_path = os.getcwd() + "/keys/public_key_0.pem"
     with open(sk_path, 'r') as f:
         private_key = RSA.import_key(f.read())
 
@@ -162,7 +162,7 @@ def refresh(pid, N, f, add_values_out, share, receive, send, target, all):
                 print("Redundant READY for " + str(sender) + " in " + str(pid))
                 continue
 
-            pk_path = os.getcwd() + "/keys/public_key_" + str(sender) + ".pem"
+            pk_path = os.getcwd() + "/keys/public_key_0.pem"
             with open(pk_path, 'r') as f:
                 public_key_verify = RSA.import_key(f.read())
 

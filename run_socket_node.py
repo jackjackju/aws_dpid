@@ -18,10 +18,10 @@ from multiprocessing import Value as mpValue, Queue as mpQueue
 from ctypes import c_bool
 
 
-def instantiate_bft_node(sid, i, B, N, f, K, S, bft_from_server: Callable, bft_to_client: Callable, ready: mpValue,
-                         stop: mpValue, protocol="ng", mute=False, F=100, debug=False, omitfast=False, countpoint=0):
+def instantiate_bft_node(sid, i, B, N, f, bft_from_server: Callable, bft_to_client: Callable, ready: mpValue,
+                         stop: mpValue, mute=False, debug=False):
     bft = None
-    bft = DPIDNode(sid, i, B, N, f, bft_from_server, bft_to_client, ready, stop, K, mute=mute, debug=False)
+    bft = DPIDNode(sid, i, B, N, f, bft_from_server, bft_to_client, ready, stop, mute=mute, debug=False)
     return bft
 
 
@@ -39,23 +39,7 @@ if __name__ == '__main__':
     parser.add_argument('--f', metavar='f', required=True,
                         help='number of faulties', type=int)
     parser.add_argument('--B', metavar='B', required=True,
-                        help='size of batch', type=int)
-    parser.add_argument('--K', metavar='K', required=False,
-                        help='instance to execute', type=int)
-    parser.add_argument('--S', metavar='S', required=False,
-                        help='slots to execute', type=int, default=50)
-    parser.add_argument('--P', metavar='P', required=False,
-                        help='protocol to execute', type=str, default="ng")
-    parser.add_argument('--M', metavar='M', required=False,
-                        help='whether to mute a third of nodes', type=bool, default=False)
-    parser.add_argument('--F', metavar='F', required=False,
-                        help='batch size of fallback path', type=int, default=100)
-    parser.add_argument('--D', metavar='D', required=False,
-                        help='whether to debug mode', type=bool, default=False)
-    parser.add_argument('--O', metavar='O', required=False,
-                        help='whether to omit the fast path', type=bool, default=False)
-    parser.add_argument('--C', metavar='C', required=False,
-                        help='point to start measure tps and latency', type=int, default=0)
+                        help='size of data', type=int)
     args = parser.parse_args()
 
     # Some parameters
@@ -64,14 +48,6 @@ if __name__ == '__main__':
     N = args.N
     f = args.f
     B = args.B
-    K = args.K
-    S = args.S
-    P = args.P
-    M = args.M
-    F = args.F
-    D = args.D
-    O = args.O
-    C = args.C
 
     # Random generator
     rnd = random.Random(sid)
@@ -111,12 +87,9 @@ if __name__ == '__main__':
         server_ready = mpValue(c_bool, False)
         net_ready = mpValue(c_bool, False)
         stop = mpValue(c_bool, False)
-        if P == 'ng':
-            net_client = network.socket_client_ng.NetworkClient(my_address[1], my_address[0], i, addresses, client_from_bft, client_ready, stop)
-        else:
-            net_client = network.socket_client.NetworkClient(my_address[1], my_address[0], i, addresses, client_from_bft, client_ready, stop)
+        net_client = network.socket_client.NetworkClient(my_address[1], my_address[0], i, addresses, client_from_bft, client_ready, stop)
         net_server = NetworkServer(my_address[1], my_address[0], i, addresses, server_to_bft, server_ready, stop)
-        bft = instantiate_bft_node(sid, i, B, N, f, K, S, bft_from_server, bft_to_client, net_ready, stop, P, M, F, D, O, C)
+        bft = instantiate_bft_node(sid, i, B, N, f, bft_from_server, bft_to_client, net_ready, stop)
 
         net_server.start()
         net_client.start()
