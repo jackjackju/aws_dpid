@@ -25,7 +25,7 @@ class DPIDNode(InfoDispersal):
 
     def prepare_bootstrap(self):
         self.logger.info('node id %d is inserting dummy payload TXs' % (self.id))
-        size = self.size
+        size = self.size*1024*1024
         print(str(size))
         tx = tx_generator(size)  # Set each dummy TX to be 250 Byte
         InfoDispersal.submit_tx(self, tx.replace(">", hex(0) + ">"))
