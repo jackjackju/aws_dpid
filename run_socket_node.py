@@ -11,6 +11,7 @@ import traceback
 from typing import List, Callable
 from gevent import Greenlet
 from myexperiements.sockettest.dpid_node import DPIDNode
+from myexperiements.sockettest.dpss_node import DPSSNode
 from network.socket_server import NetworkServer
 from network.socket_client import NetworkClient
 from network.socket_client_ng import NetworkClient
@@ -21,7 +22,7 @@ from ctypes import c_bool
 def instantiate_bft_node(sid, i, B, N, f, bft_from_server: Callable, bft_to_client: Callable, ready: mpValue,
                          stop: mpValue, mute=False, debug=False):
     bft = None
-    bft = DPIDNode(sid, i, B, N, f, bft_from_server, bft_to_client, ready, stop, mute=mute, debug=False)
+    bft = DPSSNode(sid, i, B, N, f, bft_from_server, bft_to_client, ready, stop, mute=mute, debug=False)
     return bft
 
 
