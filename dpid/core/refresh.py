@@ -75,10 +75,12 @@ def refresh(pid, N, f, add_values_out, share, receive, send, target, all, start,
                     # print(hash(original_msg) + str(pid).encode())
                     break
 
+
     sk_path = os.getcwd() + "/keys/private_key_" + str(pid) + ".pem"
     with open(sk_path, 'r') as f:
         private_key = RSA.import_key(f.read())
     f.close()
+
 
     if membership == True:
         stripes = encode(K, N, original_msg)
@@ -104,6 +106,11 @@ def refresh(pid, N, f, add_values_out, share, receive, send, target, all, start,
     final_count = 0
     merkle_decode = ""
     stop = False
+    ready = defaultdict(set)
+    readySent = False
+    readySenders = set()
+    sigs = []
+    share = ""
 
     while True:  # main receive loop
         sender, msg = receive()
@@ -155,6 +162,40 @@ def refresh(pid, N, f, add_values_out, share, receive, send, target, all, start,
                 merkle_decode = hash_stripes_recovered
                 sig = sign_data(private_key, hash(merkle_decode))
                 for j in range(N):
+
+        if msg[0] == 'VAL':
+            # Validation
+            (_, target, val) = msg
+            if readySent:
+                continue
+
+            if hash(val) != proof[target]:
+                print("Invalid hash value")
+                continue
+
+            if sender in valuesSenders:
+                print("Redundant Value for " + str(sender) + " in " + str(pid))
+                continue
+
+            # Update
+            counter += 1
+            values[sender] = val
+            valuesSenders.add(sender)
+        #
+            # Amplify ready messages
+            if (counter >= ReadyThreshold) and (readySent == False):
+                readySent = True
+
+                original_msg = decode(K, N, values)
+                #print(str(pid) + " : " + str(original_msg))
+
+                stripes = encode(K, N, original_msg)
+                hash_list = str([hash(piece) for piece in stripes])
+
+                data_signed = hash(hash_list)
+                sig = sign_data(private_key, data_signed)
+                for j in range(N):
+                    #send(j, ('RELAY', stripes[j], hash_list))
                     send(j, ('FINAL', sig))
 
         if msg[0] == 'FINAL':
@@ -178,5 +219,5 @@ def refresh(pid, N, f, add_values_out, share, receive, send, target, all, start,
                 if logger != None:
                     logger.info('Refresh at Node %d: ' % pid + str(end - start_refresh))
                     logger.info('Total at Node %d: ' % pid + str(end - start))
-                # return []
+                return []
     return []
