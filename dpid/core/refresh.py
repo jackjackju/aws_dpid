@@ -162,7 +162,6 @@ def refresh(pid, N, f, add_values_out, share, receive, send, target, all, start,
                 merkle_decode = hash_stripes_recovered
                 sig = sign_data(private_key, hash(merkle_decode))
                 for j in range(N):
-
         if msg[0] == 'VAL':
             # Validation
             (_, target, val) = msg
