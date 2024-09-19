@@ -3,5 +3,6 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/charm" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/kzg-python-toy" vcs="Git" />
   </component>
 </project>
