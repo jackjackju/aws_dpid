@@ -47,7 +47,9 @@ class NetworkServer(Process):
                     self.ready.value = True
             buf = b''
             try:
-                length = 1024*1024*32
+
+                length = 1024*1024*1024
+                # print(length)
                 while not self.stop.value:
                     if self.win == 1:
                         buf += sock.recv(length)

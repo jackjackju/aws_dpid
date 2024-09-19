@@ -17,8 +17,8 @@ for LOG_FILE in $LOG_DIR/consensus-node-*.log
 do
     # Use tail to get the last five lines of the file, then awk to extract the running time
     tail -n 1 $LOG_FILE | awk '{printf "%.3f\n", $11}' >> "$OUTPUT_FILE"
-    tail -n 5 $LOG_FILE | head -n 1 |  awk '{printf "%.3f\n", $11}' >> "$RBC_FILE"
-    tail -n 4 $LOG_FILE | head -n 1 |  awk '{printf "%.3f\n", $11}' >> "$REFRESH_FILE"
+    tail -n 3 $LOG_FILE | head -n 1 |  awk '{printf "%.3f\n", $11}' >> "$RBC_FILE"
+    tail -n 2 $LOG_FILE | head -n 1 |  awk '{printf "%.3f\n", $11}' >> "$REFRESH_FILE"
 done
 
 echo "All running times have been appended to $OUTPUT_FILE $RBC_FILE $REFRESH_FILE"\

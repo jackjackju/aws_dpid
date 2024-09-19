@@ -91,12 +91,14 @@ class InfoDispersal():
     :param K: a test parameter to specify break out after K rounds
     """
 
-    def __init__(self, sid, pid, B, N, f, send, recv):
+    def __init__(self, sid, pid, B, N, f, send, recv, sPK, sSK):
         self.sid = sid
         self.id = pid
         self.B = B
         self.N = N
         self.f = f
+        self.sPk = sPK
+        self.sSk = sSK
         self._send = send
         self._recv = recv
         self.logger = set_consensus_log(pid)
@@ -280,7 +282,7 @@ class InfoDispersal():
             hashes = result[1]
 
             # Start running ADD protocol for the hash proof
-            start = time.time()
+            start_refresh = time.time()
             def _setup_add():
                 """Setup the sub protocols RBC, BA and common coin.
                 :param int j: Node index for which the setup is being done.
@@ -302,6 +304,31 @@ class InfoDispersal():
             add_thread = _setup_add()
             add_input.put_nowait(hashes)
 
+            committee = []
+
+            def _setup_coin(j):
+                """Setup the sub protocols RBC, BA and common coin.
+                :param int j: Node index for which the setup is being done.
+                """
+
+                def coin_bcast(o):
+                    """Reliable send operation.
+                    :param k: Node to send.
+                    :param o: Value to send.
+                    """
+                    for j in range(N):
+                        send(j, ('COIN', pid, o))
+
+                # Only leader gets input
+                coin = shared_coin(sid + 'COIN' + str(j), pid, N, f,
+                                   self.sPK, self.sSK,
+                                   coin_bcast, coin_recv.get)
+                return coin
+
+            # test_coin = _setup_coin(0)
+            # committee = ast.literal_eval(test_coin(0))
+            # print(committee)
+
             # Start refreshing once received output from ADD
             def refresh_send(k, o):
                 """Reliable send operation.
@@ -312,7 +339,7 @@ class InfoDispersal():
             refresh_thread = gevent.spawn(refresh, pid, N, f,
                                add_thread.get, share,
                                refresh_recv.get,
-                               refresh_send, [], True)
+                               refresh_send, committee, False, start, start_refresh, self.logger)
 
             result = refresh_thread.get()
 
@@ -323,8 +350,9 @@ class InfoDispersal():
 
             if result == None:
                 print("Failed Refresh " + str(pid))
-            else:
-                print(str(pid))
+            # else:
+            #     print(str(pid))
+                # print(result[0])
 
             # Close ADD & Refresh Thread
             add_thread.kill()

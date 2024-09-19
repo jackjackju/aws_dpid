@@ -13,15 +13,14 @@ from gevent import Greenlet
 from myexperiements.sockettest.dpid_node import DPIDNode
 from network.socket_server import NetworkServer
 from network.socket_client import NetworkClient
-from network.socket_client_ng import NetworkClient
 from multiprocessing import Value as mpValue, Queue as mpQueue
 from ctypes import c_bool
 
 
-def instantiate_bft_node(sid, i, B, N, f, bft_from_server: Callable, bft_to_client: Callable, ready: mpValue,
+def instantiate_bft_node(sid, i, P, B, N, f, bft_from_server: Callable, bft_to_client: Callable, ready: mpValue,
                          stop: mpValue, mute=False, debug=False):
     bft = None
-    bft = DPIDNode(sid, i, B, N, f, bft_from_server, bft_to_client, ready, stop, mute=mute, debug=False)
+    bft = DPIDNode(sid, i, P, B, N, f, bft_from_server, bft_to_client, ready, stop, mute=mute, debug=False)
     return bft
 
 
@@ -40,6 +39,8 @@ if __name__ == '__main__':
                         help='number of faulties', type=int)
     parser.add_argument('--B', metavar='B', required=True,
                         help='size of data', type=int)
+    parser.add_argument('--P', metavar='P', required=False,
+                        help='protocol to execute', type=str, default="1")
     args = parser.parse_args()
 
     # Some parameters
@@ -48,6 +49,7 @@ if __name__ == '__main__':
     N = args.N
     f = args.f
     B = args.B
+    P = args.P
 
     # Random generator
     rnd = random.Random(sid)
@@ -69,7 +71,7 @@ if __name__ == '__main__':
                     my_address = (priv_ip, port)
                 addresses[pid] = (pub_ip, port)
         assert all([node is not None for node in addresses])
-        print("hosts.config is correctly read for " + str(i))
+        # print("hosts.config is correctly read for " + str(i))
 
 
         client_bft_mpq = mpQueue()
@@ -89,7 +91,7 @@ if __name__ == '__main__':
         stop = mpValue(c_bool, False)
         net_client = network.socket_client.NetworkClient(my_address[1], my_address[0], i, addresses, client_from_bft, client_ready, stop)
         net_server = NetworkServer(my_address[1], my_address[0], i, addresses, server_to_bft, server_ready, stop)
-        bft = instantiate_bft_node(sid, i, B, N, f, bft_from_server, bft_to_client, net_ready, stop)
+        bft = instantiate_bft_node(sid, i, P, B, N, f, bft_from_server, bft_to_client, net_ready, stop)
 
         net_server.start()
         net_client.start()

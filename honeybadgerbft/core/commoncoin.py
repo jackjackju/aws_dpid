@@ -101,7 +101,16 @@ def shared_coin(sid, pid, N, f, PK, SK, broadcast, receive, single_bit=True, log
                     selected_members = random.sample(participants, k)
 
                     return selected_members
-                result = deterministic_select_members(N, 2, coin)
+
+                members = 3
+                if N == 4:
+                    members = 3
+                elif N == 16:
+                    members = 11
+                elif N == 31:
+                    members = 21
+
+                result = deterministic_select_members(N, members, coin)
                 outputQueue[r].put_nowait(str(result))
                 # Compute the bit from the least bit of the hash
                 # coin = hash(g12serialize(sig))[0]

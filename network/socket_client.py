@@ -35,7 +35,7 @@ class NetworkClient (Process):
         self.sock_queues = [Queue() for _ in self.addresses_list]
         self.sock_locks = [lock.Semaphore() for _ in self.addresses_list]
         self.s = s
-        self.BYTES = 5000
+        self.BYTES = 1024*1024*1024
         super().__init__()
 
 
